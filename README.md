@@ -1,5 +1,6 @@
-# react-redux-cal
-The key to use an Express backend with a project created with create-react-app is on using a proxy. We have a proxy entry in client/package.json
+# Code Hour
+The Coding Contest Calendar is a streamlined tool that aggregates upcoming coding competitions from platforms like HackerRank, CodeChef, and Codeforces. It provides essential details such as contest dates, times, and descriptions, making it easy for programmers to plan their participation.
+
 
 "proxy": "http://localhost/"
 This tells Webpack development server to proxy our API requests to our API server, given that our Express server is running on localhost:5000
