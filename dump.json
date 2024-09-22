@@ -1,0 +1,237 @@
+import React, { Component } from 'react';
+import logo from './logo.svg';
+import {google} from 'googleapis';
+import './App.css';
+
+const TOKEN_PATH = './token.json';
+const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+
+var a=1;
+class App extends Component {
+  state = {users: [],
+          less: [],
+          hr :true,
+          he :true,
+          cc :true,
+          cf :true,
+          ot :true
+        }
+  componentDidMount() {
+    fetch('https://contesttrackerapi.herokuapp.com/android/')
+      .then(res => res.json())
+      .then(data => this.setState({ users:data.result.ongoing,less:data.result.upcoming }));
+  }
+
+  constructor(props) {
+    super(props);
+    this.handlehr = this.handlehr.bind(this);
+    this.handlehe = this.handlehe.bind(this);
+    this.handlecc = this.handlecc.bind(this);
+    this.handlecf = this.handlecf.bind(this);
+    this.handleot = this.handleot.bind(this);
+  }
+
+  enableGoogleAuth = () => {
+    let content = {
+        "installed": {
+            "client_id": "46521494313-q974n190ut7js171f1o3eshlofclcrin.apps.googleusercontent.com",
+            "project_id": "quickstart-1573568937593",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret": "f6nVu5jQN9564VeGDHRvLXvo",
+            "redirect_uris": [
+                "urn:ietf:wg:oauth:2.0:oob",
+                "http://localhost"
+            ]
+        }
+    }
+    this.authorize(JSON.parse(content), this.listEvents());
+  }
+
+  authorize(credentials, callback) {
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id, client_secret, redirect_uris[0]
+    );
+    fs.readFile(TOKEN_PATH, (err, token) => {
+      if (err){
+        console.log();
+        return this.getAccessToken(oAuth2Client, callback);
+      }
+      oAuth2Client.setCredentials(JSON.parse(token));
+      callback(oAuth2Client);
+    });
+  }
+
+  listEvents(auth) {
+    const calendar = google.calendar({version: 'v3', auth});
+    calendar.events.list({
+      calendarId: 'primary',
+      timeMin: (new Date()).toISOString(),
+      maxResults: 10,
+      singleEvents: true,
+      orderBy: 'startTime',
+    }, (err, res) => {
+      if (err) return console.log('The API returned an error: ' + err);
+      const events = res.data.items;
+      if (events.length) {
+        console.log('Upcoming 10 events:');
+        events.map((event, i) => {
+          const start = event.start.dateTime || event.start.date;
+          console.log(`${start} - ${event.summary}`);
+        });
+      } else {
+        console.log('No upcoming events found.');
+      }
+    });
+  }
+
+  check(str){
+    if(str==="HACKERRANK"){
+      if(this.state.hr)
+        return true;
+      else
+        return false;
+    }
+
+    if(str==="CODECHEF"){
+      if(this.state.cc)
+        return true;
+      else
+        return false;
+    }
+
+    if(str==="HACKEREARTH"){
+      if(this.state.he)
+        return true;
+      else
+        return false;
+    }
+
+    if(str==="CODEFORCES"){
+      if(this.state.cf)
+        return true;
+      else
+        return false;
+    }
+
+    if(str==="OTHER"){
+      if(this.state.ot)
+        return true;
+      else
+        return false;
+    }
+  }
+
+  handlehr(){
+    this.setState({hr:!this.state.hr});
+  }
+
+  handlehe(){
+    this.setState({he:!this.state.he});
+  }
+
+  handlecf(){
+    this.setState({cf:!this.state.cf});
+  }
+
+  handlecc(){
+    this.setState({cc:!this.state.cc});
+  }
+
+  handleot(){
+    this.setState({ot:!this.state.ot});
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <div>
+          <header className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <h1 className="App-title">Welcome to React Calendar</h1>
+          </header>
+          <div className="cb">
+            <div className="pretty p-default p-round">
+              <input type="checkbox" onChange={this.handlehr} defaultChecked={this.state.hr}/>
+              <div className="state p-success-o">
+                  <label><strong>Hackerrank</strong></label>
+              </div>
+            </div>
+
+            <div className="pretty p-default p-round">
+              <input type="checkbox" onChange={this.handlecf} defaultChecked={this.state.cf}/>
+              <div className="state p-success-o">
+                  <label><strong>Codeforces</strong></label>
+              </div>
+            </div>
+
+          <div className="pretty p-default p-round">
+              <input type="checkbox" onChange={this.handlecc} defaultChecked={this.state.cc}/>
+              <div className="state p-success-o">
+                  <label><strong>Codechef</strong></label>
+              </div>
+            </div>
+
+            <div className="pretty p-default p-round">
+              <input type="checkbox" onChange={this.handlehe} defaultChecked={this.state.he}/>
+              <div className="state p-success-o">
+                  <label><strong>Hackerearth</strong></label>
+              </div>
+            </div>
+
+            <div className="pretty p-default p-round">
+              <input type="checkbox" onChange={this.handleot} defaultChecked={this.state.ot}/>
+              <div className="state p-success-o">
+                  <label><strong>Others</strong></label>
+              </div>
+            </div>
+          </div>
+          <div className="hell">
+          {this.state.users.map(e => (
+            this.check(e.Platform) ? (
+               <div>
+                     <button className="button button1" data-toggle="collapse" data-target={"#"+a}><h5><b>{e.Name}</b></h5></button>
+                      <div id={a++} className="adi collapse">
+                        <strong>Name</strong> : {e.Name} <br/>
+                        <strong>Ends In</strong> : {e.EndTime} <br/>
+                        <strong>Platform</strong> : {e.Platform} <br/>
+                        <strong>Url</strong> : <a href={e.url}>Paricipate</a> <br/>
+                        <button onClick={(e) => this.enableGoogleAuth(e)} className="btn btn-default addToCalender"><span className="glyphicon glyphicon-calendar"></span>Add to Calendar</button>
+                      </div>
+                </div>
+            ) : <div></div>
+          ))}
+          </div>
+
+        </div>
+        <div>
+        <h1>Upcoming Contest</h1>
+        <br/>
+        {this.state.less.map(e => (
+          this.check(e.Platform)?
+                  <div>
+                     <button className="button button4" data-toggle="collapse" data-target={"#"+a}><h5><b>{e.Name}</b></h5></button>
+                      <div id={a++} className="adi collapse">
+                        <strong>Name</strong> : {e.Name} <br/>
+                        <strong>Starts In</strong> : {e.StartTime} <br/>
+                        <strong>Ends In</strong> : {e.EndTime} <br/>
+                        <strong>Duration</strong> : {e.Duration} <br/>
+                        <strong>Platform</strong> : {e.Platform} <br/>
+                        <strong>Url</strong> : <a href={e.url}>Paricipate</a>
+                      </div>
+                  </div>:<div></div>
+            ))}
+      </div>
+        <div className="pad">
+          <header className="footer">
+              <p>In <span className="glyphicon glyphicon-heart coll"></span> With ReactJS</p>
+          </header>
+        </div>
+    </div>
+    );
+  }
+}
+
+export default App;
